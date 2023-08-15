@@ -17,7 +17,6 @@ async def search_events():
     errors = SearchSchema().validate(request.args)
 
     if errors:
-        print(errors)
         return jsonify({
             "error": {
                 "code": "INVALID_INPUT",
