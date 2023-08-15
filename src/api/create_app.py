@@ -1,5 +1,5 @@
 from flask import Flask
-from api.extemsions import cors
+from src.api.extensions import cors, db, ma, migrate
 
 
 def create_app(config):
@@ -8,6 +8,9 @@ def create_app(config):
 
     with app.app_context():
         cors.init_app(app, resources={r"*": {"origins": "*"}})
+        db.init_app(app)
+        migrate.init_app(app, db)
+        ma.init_app(app)
 
         register_blueprints(app)
 
