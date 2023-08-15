@@ -1,11 +1,10 @@
 from flask import Flask
 from api.extemsions import cors
-from config.api_config import ApiConfig
 
 
-def create_app():
+def create_app(config):
     app = Flask(__name__)
-    app.config.from_object(ApiConfig())
+    app.config.from_object(config)
 
     with app.app_context():
         cors.init_app(app, resources={r"*": {"origins": "*"}})
