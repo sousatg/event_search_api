@@ -1,5 +1,5 @@
 run:
-	uvicorn src.api.main:asgi_app
+	uvicorn src.api.main:asgi_app --reload
 
 tests:
 	python -m unittest discover src
