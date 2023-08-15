@@ -1,3 +1,9 @@
 flask[async]
 uvicorn
 flask-cors
+flask-sqlalchemy
+flask-cors
+flask-migrate
+flask-marshmallow
+psycopg2-binary
+marshmallow-sqlalchemy
