@@ -7,3 +7,6 @@ flask-migrate
 flask-marshmallow
 psycopg2-binary
 marshmallow-sqlalchemy
+celery
+requests
+lxml
