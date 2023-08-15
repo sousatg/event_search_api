@@ -1,5 +1,5 @@
 from flask import Flask
-from src.api.extensions import cors, db, ma, migrate
+from api.extensions import cors, db, ma, migrate
 
 
 def create_app(config):

@@ -2,9 +2,9 @@ from celery import Celery
 from celery.signals import worker_ready
 
 app = Celery(
-    'extractor',
+    'worker',
     broker='pyamqp://guest@localhost//',
-    include=['extractor.tasks']
+    include=['worker.tasks']
 )
 
 app.conf.update(
@@ -13,9 +13,8 @@ app.conf.update(
 
 app.conf.beat_schedule = {
     'add-every-30-seconds': {
-        'task': 'extractor.tasks.add',
-        'schedule': 50.0,
-        'args': (16, 16)
+        'task': 'worker.tasks.add',
+        'schedule': 50.0
     },
 }
 
@@ -27,7 +26,7 @@ def at_start(sender, **kwargs):
     """Run tasks at startup"""
     with sender.app.connection() as conn:
         sender.app.send_task(
-            "extractor.tasks.add",
+            "worker.tasks.add",
             connection=conn
         )
 
