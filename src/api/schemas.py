@@ -10,12 +10,12 @@ class SearchSchema(ma.Schema):
 class EventSchema(ma.Schema):
     class Meta:
         fields = (
-            "id",
-            "title",
-            "start_date",
-            "start_time",
-            "end_date",
-            "end_time",
-            "min_price",
-            "max_price"
+            'id',
+            'title',
+            'start_date',
+            'start_time',
+            'end_date',
+            'end_time',
+            'min_price',
+            'max_price'
         )

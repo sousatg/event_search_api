@@ -7,31 +7,31 @@ from datetime import datetime
 bp = Blueprint('main', __name__)
 
 
-@bp.route("/")
+@bp.route('/')
 async def index():
-    return "ok"
+    return 'ok'
 
 
-@bp.route("/search", methods=["GET"])
+@bp.route('/search', methods=['GET'])
 async def search_events():
     errors = SearchSchema().validate(request.args)
 
     if errors:
         return jsonify({
-            "error": {
-                "code": "INVALID_INPUT",
-                "message": "INVALID_INPUT"
+            'error': {
+                'code': 'INVALID_INPUT',
+                'message': 'INVALID_INPUT'
             },
-            "data": None
+            'data': None
         }), 400
 
-    starts_at = request.args.get("starts_at", None)
-    ends_at = request.args.get("ends_at", None)
+    starts_at = request.args.get('starts_at', None)
+    ends_at = request.args.get('ends_at', None)
 
-    start_date = datetime.strptime(starts_at, "%Y-%m-%dT%H:%M:%SZ")
-    start_time = datetime.strptime(starts_at, "%Y-%m-%dT%H:%M:%SZ").time()
-    end_date = datetime.strptime(ends_at, "%Y-%m-%dT%H:%M:%SZ")
-    end_time = datetime.strptime(ends_at, "%Y-%m-%dT%H:%M:%SZ").time()
+    start_date = datetime.strptime(starts_at, '%Y-%m-%dT%H:%M:%SZ')
+    start_time = datetime.strptime(starts_at, '%Y-%m-%dT%H:%M:%SZ').time()
+    end_date = datetime.strptime(ends_at, '%Y-%m-%dT%H:%M:%SZ')
+    end_time = datetime.strptime(ends_at, '%Y-%m-%dT%H:%M:%SZ').time()
 
     all_events = Event.query.filter(
         Event.start_date >= start_date,
@@ -42,8 +42,8 @@ async def search_events():
 
     result = EventSchema(many=True).dump(all_events)
 
-    response = {"data": {
-        "events": result
+    response = {'data': {
+        'events': result
     }}
 
     return response

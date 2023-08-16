@@ -13,10 +13,10 @@ app.config_from_object(CeleryConfig)
 
 @worker_ready.connect
 def at_start(sender, **kwargs):
-    """Run tasks at startup"""
+    '''Run tasks at startup'''
     with sender.app.connection() as conn:
         sender.app.send_task(
-            "worker.tasks.extract",
+            'worker.tasks.extract',
             connection=conn
         )
 
