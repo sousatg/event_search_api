@@ -4,33 +4,36 @@ import datetime
 from lxml import etree
 from unittest.mock import patch, MagicMock, Mock
 from worker.tasks import parse_doc_to_event, save_event_in_the_database, extract
+from api.models import Event
 
 
 class TestSaveEvent(unittest.TestCase):
+    def test_passing_empty_event_property(self,):
+        with self.assertRaises(Exception) as context:
+            save_event_in_the_database(None)
+
+        self.assertTrue('Passed parameter is not a dictionary' in str(context.exception))
+
+    def test_missing_internal_id(self):
+        event = {
+            'title': 'Test Event',
+        }
+
+        with self.assertRaises(Exception) as context:
+            save_event_in_the_database(event)
+
+        self.assertTrue('Missing internal id' in str(context.exception))
+
     @patch('worker.tasks.SessionLocal')
     def test_event_with_internal_id_already_exists(self, mock_session):
         mock_db_session = MagicMock()
-        mock_db_session.query.return_value.filter_by.return_value.one_or_none.return_value = None
+        mock_db_session.query.return_value.filter_by.return_value.one_or_none.return_value = Event()
         mock_session.return_value = mock_db_session
 
-        event = {
+        event = dict({
             'internal_id': 'existing_id',
             'title': 'Test Event',
-        }
-
-        save_event_in_the_database(event)
-
-        mock_db_session.add.assert_not_called()
-
-    @patch('worker.tasks.SessionLocal')
-    def test_missing_internal_id(self, mock_session):
-        mock_db_session = MagicMock()
-        mock_db_session.query.return_value.filter_by.return_value.one_or_none.return_value = None
-        mock_session.return_value = mock_db_session
-
-        event = {
-            'title': 'Test Event',
-        }
+        })
 
         save_event_in_the_database(event)
 
