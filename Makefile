@@ -1,4 +1,4 @@
-run:
+server:
 	uvicorn src.api.main:asgi_app --reload
 
 tests:
