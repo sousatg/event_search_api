@@ -14,6 +14,13 @@ from worker.util import get_element
 def save_event_in_the_database(event):
     session: Session = SessionLocal()
 
+    internal_id = event.get('internal_id', None)
+    result = session.query(Event).filter_by(internal_id).one_or_none()
+
+    # Terminate task if internal_id already exists in the database
+    if result is None:
+        return
+
     entity = Event()
 
     entity.id = str(uuid4())
@@ -27,10 +34,8 @@ def save_event_in_the_database(event):
     entity.max_price = event.get('max_price', None)
 
     try:
-        print('Saving event in the database')
         session.add(entity)
         session.commit()
-        print('Saved in the database')
     except Exception as e:
         print('Failed to save in the database: ', e, event)
         session.rollback()
@@ -92,7 +97,6 @@ def extract(self):
         r = requests.get('https://provider.code-challenge.feverup.com/api/events')
 
         if r.status_code != 200:
-            print(f'HTTP connection failed with status code: {r.status_code}')
             raise Exception(
                 f'HTTP connection failed with status code: {r.status_code}'
             )

@@ -2,7 +2,39 @@ import unittest
 
 import datetime
 from lxml import etree
-from worker.tasks import parse_doc_to_event
+from unittest.mock import patch, MagicMock, Mock
+from worker.tasks import parse_doc_to_event, save_event_in_the_database, extract
+
+
+class TestSaveEvent(unittest.TestCase):
+    @patch('worker.tasks.SessionLocal')
+    def test_event_with_internal_id_already_exists(self, mock_session):
+        mock_db_session = MagicMock()
+        mock_db_session.query.return_value.filter_by.return_value.one_or_none.return_value = None
+        mock_session.return_value = mock_db_session
+
+        event = {
+            'internal_id': 'existing_id',
+            'title': 'Test Event',
+        }
+
+        save_event_in_the_database(event)
+
+        mock_db_session.add.assert_not_called()
+
+    @patch('worker.tasks.SessionLocal')
+    def test_missing_internal_id(self, mock_session):
+        mock_db_session = MagicMock()
+        mock_db_session.query.return_value.filter_by.return_value.one_or_none.return_value = None
+        mock_session.return_value = mock_db_session
+
+        event = {
+            'title': 'Test Event',
+        }
+
+        save_event_in_the_database(event)
+
+        mock_db_session.add.assert_not_called()
 
 
 class TestParseDocToEvent(unittest.TestCase):
@@ -75,3 +107,35 @@ class TestParseDocToEvent(unittest.TestCase):
             parse_doc_to_event(doc)
 
         self.assertEqual(str(context.exception), "Wront datetime format: asd")
+
+
+class TestExtract(unittest.TestCase):
+    @patch('worker.tasks.requests.get')
+    @patch('worker.tasks.handle_extracted_events', side_effect=lambda *args, **kwargs: None)
+    def test_successful_extraction(self, mock_handle, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.content = b'<root><eventList><output><base_event>Event1</base_event></output></eventList></root>'
+        mock_get.return_value = mock_response
+
+        mock_handle.return_value = None
+
+        extract()
+
+        mock_get.assert_called_once()
+        mock_handle.assert_called_once()
+
+    @patch('worker.tasks.requests.get')
+    @patch('worker.tasks.handle_extracted_events', side_effect=lambda *args, **kwargs: None)
+    def test_failed_http_connection(self, mock_handle, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 404
+        mock_get.return_value = mock_response
+
+        mock_handle.return_value = None
+
+        with self.assertRaises(Exception) as context:
+            extract()
+
+        self.assertTrue('HTTP connection failed' in str(context.exception))
+        mock_handle.assert_not_called()
