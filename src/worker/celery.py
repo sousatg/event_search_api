@@ -12,9 +12,9 @@ app.conf.update(
 )
 
 app.conf.beat_schedule = {
-    'add-every-30-seconds': {
+    'extract-every-12-hours': {
         'task': 'worker.tasks.extract',
-        'schedule': 50.0
+        'schedule': 12 * 60 * 60
     },
 }
 

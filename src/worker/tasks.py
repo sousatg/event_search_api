@@ -89,7 +89,7 @@ def handle_extracted_events(doc):
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def extract(self):
     try:
-        r = requests.get("http://localhost:5000/")
+        r = requests.get("https://provider.code-challenge.feverup.com/api/events")
 
         if r.status_code != 200:
             print(f"HTTP connection failed with status code: {r.status_code}")
