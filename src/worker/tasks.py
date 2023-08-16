@@ -7,23 +7,24 @@ from worker.database import SessionLocal
 from uuid import uuid4
 from api.models import Event
 from datetime import datetime
+from worker.util import get_element
 
 
-@app.task(bind=True, max_retries=3, retry_backoff=True)
-def save_event_in_the_database(self, event):
+@app.task
+def save_event_in_the_database(event):
     session: Session = SessionLocal()
 
     entity = Event()
 
     entity.id = str(uuid4())
-    entity.title = event.get("title")
-    entity.internal_id = event.get("internal_id")
-    entity.start_date = event.get("start_date")
-    entity.start_time = event.get("start_time")
-    entity.end_date = event.get("end_date")
-    entity.end_time = event.get("end_time")
-    entity.min_price = event.get("min_price")
-    entity.max_price = event.get("max_price")
+    entity.title = event.get("title", None)
+    entity.internal_id = event.get("internal_id", None)
+    entity.start_date = event.get("start_date", None)
+    entity.start_time = event.get("start_time", None)
+    entity.end_date = event.get("end_date", None)
+    entity.end_time = event.get("end_time", None)
+    entity.min_price = event.get("min_price", None)
+    entity.max_price = event.get("max_price", None)
 
     try:
         print("Saving event in the database")
@@ -31,55 +32,67 @@ def save_event_in_the_database(self, event):
         session.commit()
         print("Saved in the database")
     except Exception as e:
-        print("Failed to save in the database")
+        print("Failed to save in the database: ", e, event)
         session.rollback()
         session.close()
-        raise self.retry(exc=e)
 
     session.close()
 
 
+def parse_doc_to_event(doc):
+    sell_mode = get_element(doc, "./@sell_mode")
+
+    if sell_mode != "online":
+        return
+
+    title = get_element(doc, "./@title")
+    base_event_id = get_element(doc, "./@base_event_id")
+    event_id = get_element(doc, "./event/@event_id")
+
+    start_hour = get_element(doc, "./event/@event_start_date")
+    try:
+        start_hour_object = datetime.strptime(start_hour, "%Y-%m-%dT%H:%M:%S")
+    except Exception as e:
+        raise Exception(f"Wront datetime format: {start_hour}")
+
+    end_hour = get_element(doc, "./event/@event_end_date")
+    try:
+        end_hour_object = datetime.strptime(end_hour, "%Y-%m-%dT%H:%M:%S")
+    except Exception as e:
+        raise Exception(f"Wront datetime format: {end_hour}")
+
+    prices = sorted(doc.xpath("./event/zone/@price"))
+
+    if len(prices) < 1:
+        raise Exception("Missing prices")
+
+    min_price = float(prices[0])
+    max_price = float(prices[-1])
+
+    return {
+        "internal_id": f"1:{base_event_id}:{event_id}",
+        "title": title,
+        "end_time": end_hour_object.time(),
+        "end_date": end_hour_object.date(),
+        "start_date": start_hour_object.date(),
+        "start_time": start_hour_object.time(),
+        "min_price": min_price,
+        "max_price": max_price
+    }
+
+
+def handle_extracted_events(doc):
+    event = parse_doc_to_event(doc)
+    app.send_task("worker.tasks.save_event_in_the_database", args=[event])
+
+
 @app.task(bind=True, max_retries=3, retry_backoff=True)
 def extract(self):
-    def parse_event(event):
-        sell_mode = event.xpath("./@sell_mode").pop()
-
-        if sell_mode != "online":
-            return
-
-        title = event.xpath("./@title").pop()
-
-        base_event_id = event.xpath("./@base_event_id").pop()
-        event_id = event.xpath("./event/@event_id").pop()
-
-        start_hour = event.xpath("./event/@event_start_date").pop()
-        start_hour_object = datetime.strptime(start_hour, "%Y-%m-%dT%H:%M:%S")
-
-        end_hour = event.xpath("./event/@event_end_date").pop()
-        end_hour_object = datetime.strptime(end_hour, "%Y-%m-%dT%H:%M:%S")
-
-        prices = sorted(event.xpath("./event/zone/@price"))
-        min_price = prices[0]
-        max_price = prices[-1]
-
-        data = {
-            "internal_id": f"1:{base_event_id}:{event_id}",
-            "title": title,
-            "end_time": end_hour_object.time(),
-            "end_date": end_hour_object.date(),
-            "start_date": start_hour_object.date(),
-            "start_time": start_hour_object.time(),
-            "min_price": min_price,
-            "max_price": max_price
-        }
-
-        app.send_task("worker.tasks.save_event_in_the_database", args=[data])
-
     try:
         r = requests.get("http://localhost:5000/")
 
         if r.status_code != 200:
-            print("Error getting the data")
+            print(f"HTTP connection failed with status code: {r.status_code}")
             raise Exception(
                 f"HTTP connection failed with status code: {r.status_code}"
             )
@@ -88,7 +101,7 @@ def extract(self):
 
             doc = etree.XML(r.content)
             for event in doc.xpath("//eventList/output/base_event"):
-                pool.submit(parse_event(event))
+                pool.submit(handle_extracted_events(event))
 
             pool.shutdown(wait=True)
     except Exception as e:
