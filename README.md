@@ -27,6 +27,18 @@ pip install -r requirements.txt
 pip install -r requirements-dev.text
 ```
 
+#### Create a .env file
+```
+cp .dis.env .env
+```
+
+Note: Update the necessary values
+
+#### Load the environment variables
+```
+source .env
+```
+
 #### Start the project
 1. Start Postgres and RabbitMQ using `docker-compose up -d`
 2. Make sure the images are running with `docker ps`
@@ -39,6 +51,6 @@ pip install -r requirements-dev.text
 
 ## Architecture
 
-## Component Diagram
+### Component Diagram
 
 ![Component Diagram](/docs/component_diagram.png)
