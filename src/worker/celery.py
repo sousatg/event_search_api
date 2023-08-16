@@ -1,24 +1,14 @@
 from celery import Celery
 from celery.signals import worker_ready
+from config.celery_config import CeleryConfig
+
 
 app = Celery(
     'worker',
-    broker='pyamqp://guest@localhost//',
     include=['worker.tasks']
 )
 
-app.conf.update(
-    result_expires=3600,
-)
-
-app.conf.beat_schedule = {
-    'extract-every-12-hours': {
-        'task': 'worker.tasks.extract',
-        'schedule': 12 * 60 * 60
-    },
-}
-
-app.conf.timezone = 'UTC'
+app.config_from_object(CeleryConfig)
 
 
 @worker_ready.connect
