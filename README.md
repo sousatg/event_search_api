@@ -49,9 +49,11 @@ source .env
 #### Start the project
 1. Start Postgres and RabbitMQ using `docker-compose up -d`
 2. Make sure the images are running with `docker ps`
-3. Start the API server with `make server`
-4. Start the cron job by going to `src` foler and executing `celery -A worker beat -l INFO`
-5. Start the task runner by going to `src` foler and executing `celery -A worker worker -l INFO`
+3. CD into the `src` folder
+4. Run the migrations with `flask --app api.main:app db upgrade`
+5. Start the API server by running `uvicorn api.main:asgi_app --host 0.0.0.0`
+6. Start the cron job `celery -A worker beat -l INFO`
+7. Start the task runner `src` foler and executing `celery -A worker worker -l INFO`
 
 ### Useful commands
 - `make tests` - will run all tests
