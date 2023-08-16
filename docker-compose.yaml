@@ -1,5 +1,35 @@
 version: "3"
 services:
+  api:
+    build: ./src
+    depends_on:
+      - database
+    command: "uvicorn api.main:asgi_app --host 0.0.0.0"
+    ports:
+      - 8000:8000
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: "my-secret-key"
+      API_SQLALCHEMY_DATABASE_URI: "postgresql+psycopg2://dev:dev@database:5432/events"
+
+  cronjob:
+    build: ./src
+    depends_on:
+      - rabbitmq
+    command: "celery -A worker beat -l INFO"
+    environment:
+      CELERY_BROKER_URL: "pyamqp://guest@rabbitmq//"
+
+  tasks:
+    build: ./src
+    depends_on:
+      - rabbitmq
+      - database
+    command: "celery -A worker worker -l INFO"
+    environment:
+      CELERY_BROKER_URL: "pyamqp://guest@rabbitmq//"
+      CELERY_DATABASE_URL: "postgresql+psycopg2://dev:dev@database:5432/events"
+
   database:
     image: postgres:15.2-alpine
     environment:

@@ -1,13 +1,12 @@
 ## Installation
-
-### Setup
-#### What you'll need
+### What you'll need
 - [Git](https://git-scm.com/)
 - [Python 3.10](https://www.python.org/)
 - [Docker](https://www.docker.com/)
 - [Docker-Compose](https://docs.docker.com/compose/)
 - make ([Windows - CMD](http://gnuwin32.sourceforge.net/packages/make.htm), MacOS - brew, Ubuntu/WSL - apt)
 
+### Initial Steps
 #### Clone the Repository
 ```
 git@github.com:FeverCodeChallenge/GilSousa.git
@@ -18,6 +17,14 @@ git@github.com:FeverCodeChallenge/GilSousa.git
 cd GilSousa
 ```
 
+### Run with docker compose
+```
+make run
+```
+
+And the application will be runnig at http://localhost:8000
+
+### Run Locally
 #### Create a Virtualenv and install dependencies
 
 ```

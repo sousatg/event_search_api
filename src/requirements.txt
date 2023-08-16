@@ -10,3 +10,4 @@ marshmallow-sqlalchemy
 celery
 requests
 lxml
+asgiref

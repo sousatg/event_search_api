@@ -1,3 +1,6 @@
+run:
+	docker-compose up
+
 server:
 	uvicorn src.api.main:asgi_app --reload
 
