@@ -9,8 +9,8 @@ from api.models import Event
 from datetime import datetime
 
 
-@app.task
-def save_event_in_the_database(event):
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def save_event_in_the_database(self, event):
     session: Session = SessionLocal()
 
     entity = Event()
@@ -32,13 +32,15 @@ def save_event_in_the_database(event):
         print("Saved in the database")
     except Exception as e:
         print("Failed to save in the database")
-        print(e)
         session.rollback()
+        session.close()
+        raise self.retry(exc=e)
 
     session.close()
 
-@app.task
-def add():
+
+@app.task(bind=True, max_retries=3, retry_backoff=True)
+def extract(self):
     def parse_event(event):
         sell_mode = event.xpath("./@sell_mode").pop()
 
@@ -73,18 +75,21 @@ def add():
 
         app.send_task("worker.tasks.save_event_in_the_database", args=[data])
 
-    r = requests.get("http://localhost:5000/")
+    try:
+        r = requests.get("http://localhost:5000/")
 
-    if r.status_code != 200:
-        print("Error getting the data")
-        raise Exception("HTTP Request Failed")
-        # Add a retry
+        if r.status_code != 200:
+            print("Error getting the data")
+            raise Exception(
+                f"HTTP connection failed with status code: {r.status_code}"
+            )
+        else:
+            pool = concurrent.futures.ThreadPoolExecutor(max_workers=3)
 
-    else:
-        pool = concurrent.futures.ThreadPoolExecutor(max_workers=3)
+            doc = etree.XML(r.content)
+            for event in doc.xpath("//eventList/output/base_event"):
+                pool.submit(parse_event(event))
 
-        doc = etree.XML(r.content)
-        for event in doc.xpath("//eventList/output/base_event"):
-            pool.submit(parse_event(event))
-
-        pool.shutdown(wait=True)
+            pool.shutdown(wait=True)
+    except Exception as e:
+        raise self.retry(exc=e)

@@ -13,7 +13,7 @@ app.conf.update(
 
 app.conf.beat_schedule = {
     'add-every-30-seconds': {
-        'task': 'worker.tasks.add',
+        'task': 'worker.tasks.extract',
         'schedule': 50.0
     },
 }
@@ -26,7 +26,7 @@ def at_start(sender, **kwargs):
     """Run tasks at startup"""
     with sender.app.connection() as conn:
         sender.app.send_task(
-            "worker.tasks.add",
+            "worker.tasks.extract",
             connection=conn
         )
 
