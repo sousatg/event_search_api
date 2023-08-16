@@ -1,5 +1,9 @@
+import os
+
+
 class CeleryConfig:
-    broker_url = 'pyamqp://guest@localhost//'
+    broker_url = os.environ.get('CELERY_BROKER_URL') \
+        or 'pyamqp://guest@localhost//'
 
     beat_schedule = {
         'extract-every-12-hours': {
