@@ -4,5 +4,5 @@ from worker.provider_scraper.fetcher import DataFetcher
 
 @app.task
 def process_fetch():
-    data_fetcher = DataFetcher("http://localhost:5000")
+    data_fetcher = DataFetcher("https://provider.code-challenge.feverup.com/api/events")
     data_fetcher.fetch_and_parse()
