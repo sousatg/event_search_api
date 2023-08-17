@@ -20,7 +20,7 @@ async def search_events():
         return (
             jsonify(
                 {
-                    "error": {"code": "INVALID_INPUT", "message": "INVALID_INPUT"},
+                    "error": {"code": 400, "message": "Bad Request"},
                     "data": None,
                 }
             ),
@@ -44,6 +44,6 @@ async def search_events():
 
     result = EventSchema(many=True).dump(all_events)
 
-    response = {"data": {"events": result}}
+    response = {"data": {"events": result}, "error": None}
 
     return response
