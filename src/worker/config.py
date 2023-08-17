@@ -7,7 +7,7 @@ class CeleryConfig:
 
     beat_schedule = {
         'extract-every-12-hours': {
-            'task': 'worker.tasks.extract',
+            'task': 'worker.provider_scraper.tasks.process_fetch',
             'schedule': 12 * 60 * 60,  # 12 hours in seconds
         },
     }

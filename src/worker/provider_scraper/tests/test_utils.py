@@ -1,6 +1,6 @@
 import unittest
 from lxml import etree
-from worker.util import get_element
+from worker.provider_scraper.util import get_element
 
 
 class TestGetElement(unittest.TestCase):
