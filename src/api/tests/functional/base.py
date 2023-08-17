@@ -3,6 +3,7 @@ import unittest
 from flask import current_app
 from config.api_config import ApiConfig
 from api.create_app import create_app
+
 # from sqlalchemy_utils import database_exists, create_database
 
 
@@ -23,4 +24,4 @@ class BaseTestCase(unittest.TestCase):
         self._app_context.pop()
 
     def test_app_is_testing(self):
-        self.assertTrue(current_app.config['TESTING'])
+        self.assertTrue(current_app.config["TESTING"])

@@ -2,7 +2,7 @@ from api.create_app import db
 
 
 class Event(db.Model):
-    __tablename__ = 'events'
+    __tablename__ = "events"
     id = db.Column(db.String, primary_key=True)
     internal_id = db.Column(db.String, unique=True, nullable=True, index=True)
     title = db.Column(db.String, nullable=False)

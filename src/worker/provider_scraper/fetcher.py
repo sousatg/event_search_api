@@ -22,49 +22,49 @@ class DataFetcher:
 
     def parse_xml(self):
         root = etree.XML(self._data)
-        event_list = root.xpath('//eventList/output/base_event')
+        event_list = root.xpath("//eventList/output/base_event")
 
         return event_list
 
     def process_event(self, root):
-        sell_mode = get_element(root, './@sell_mode')
+        sell_mode = get_element(root, "./@sell_mode")
 
-        if sell_mode != 'online':
+        if sell_mode != "online":
             return
 
-        title = get_element(root, './@title')
-        base_event_id = get_element(root, './@base_event_id')
-        event_id = get_element(root, './event/@event_id')
+        title = get_element(root, "./@title")
+        base_event_id = get_element(root, "./@base_event_id")
+        event_id = get_element(root, "./event/@event_id")
 
-        start_hour = get_element(root, './event/@event_start_date')
+        start_hour = get_element(root, "./event/@event_start_date")
         try:
-            start_hour_object = datetime.strptime(start_hour, '%Y-%m-%dT%H:%M:%S')
+            start_hour_object = datetime.strptime(start_hour, "%Y-%m-%dT%H:%M:%S")
         except Exception:
-            raise Exception(f'Wront datetime format: {start_hour}')
+            raise Exception(f"Wront datetime format: {start_hour}")
 
-        end_hour = get_element(root, './event/@event_end_date')
+        end_hour = get_element(root, "./event/@event_end_date")
         try:
-            end_hour_object = datetime.strptime(end_hour, '%Y-%m-%dT%H:%M:%S')
+            end_hour_object = datetime.strptime(end_hour, "%Y-%m-%dT%H:%M:%S")
         except Exception:
-            raise Exception(f'Wront datetime format: {end_hour}')
+            raise Exception(f"Wront datetime format: {end_hour}")
 
-        prices = sorted(root.xpath('./event/zone/@price'))
+        prices = sorted(root.xpath("./event/zone/@price"))
 
         if len(prices) < 1:
-            raise Exception('Missing prices')
+            raise Exception("Missing prices")
 
         min_price = float(prices[0])
         max_price = float(prices[-1])
 
         e = {
-            'internal_id': f'1:{base_event_id}:{event_id}',
-            'title': title,
-            'end_time': end_hour_object.time(),
-            'end_date': end_hour_object.date(),
-            'start_date': start_hour_object.date(),
-            'start_time': start_hour_object.time(),
-            'min_price': min_price,
-            'max_price': max_price
+            "internal_id": f"1:{base_event_id}:{event_id}",
+            "title": title,
+            "end_time": end_hour_object.time(),
+            "end_date": end_hour_object.date(),
+            "start_date": start_hour_object.date(),
+            "start_time": start_hour_object.time(),
+            "min_price": min_price,
+            "max_price": max_price,
         }
 
         save_event_in_the_database.delay(e)

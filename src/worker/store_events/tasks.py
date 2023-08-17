@@ -8,14 +8,14 @@ from worker.store_events.database import SessionLocal
 @app.task
 def save_event_in_the_database(event):
     if type(event) is not dict:
-        raise Exception('Passed parameter is not a dictionary')
+        raise Exception("Passed parameter is not a dictionary")
 
     session: Session = SessionLocal()
 
-    internal_id = event.get('internal_id', None)
+    internal_id = event.get("internal_id", None)
 
     if internal_id is None:
-        raise Exception('Missing internal id')
+        raise Exception("Missing internal id")
 
     result = session.query(Event).filter_by(internal_id=internal_id).one_or_none()
 
@@ -27,14 +27,14 @@ def save_event_in_the_database(event):
         entity = Event()
 
         entity.id = str(uuid4())
-        entity.title = event.get('title', None)
-        entity.internal_id = event.get('internal_id', None)
-        entity.start_date = event.get('start_date', None)
-        entity.start_time = event.get('start_time', None)
-        entity.end_date = event.get('end_date', None)
-        entity.end_time = event.get('end_time', None)
-        entity.min_price = event.get('min_price', None)
-        entity.max_price = event.get('max_price', None)
+        entity.title = event.get("title", None)
+        entity.internal_id = event.get("internal_id", None)
+        entity.start_date = event.get("start_date", None)
+        entity.start_time = event.get("start_time", None)
+        entity.end_date = event.get("end_date", None)
+        entity.end_time = event.get("end_time", None)
+        entity.min_price = event.get("min_price", None)
+        entity.max_price = event.get("max_price", None)
 
         session.add(entity)
         session.commit()

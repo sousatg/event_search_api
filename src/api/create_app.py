@@ -7,7 +7,7 @@ def create_app(config):
     app.config.from_object(config)
 
     with app.app_context():
-        cors.init_app(app, resources={r'*': {'origins': '*'}})
+        cors.init_app(app, resources={r"*": {"origins": "*"}})
         db.init_app(app)
         migrate.init_app(app, db)
         ma.init_app(app)

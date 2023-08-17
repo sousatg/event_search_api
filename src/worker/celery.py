@@ -4,11 +4,7 @@ from worker.config import CeleryConfig
 
 
 app = Celery(
-    'worker',
-    include=[
-        'worker.provider_scraper.tasks',
-        'worker.store_events.tasks'
-    ]
+    "worker", include=["worker.provider_scraper.tasks", "worker.store_events.tasks"]
 )
 
 app.config_from_object(CeleryConfig)
@@ -16,13 +12,12 @@ app.config_from_object(CeleryConfig)
 
 @worker_ready.connect
 def at_start(sender, **kwargs):
-    '''Run tasks at startup'''
+    """Run tasks at startup"""
     with sender.app.connection() as conn:
         sender.app.send_task(
-            'worker.provider_scraper.tasks.process_fetch',
-            connection=conn
+            "worker.provider_scraper.tasks.process_fetch", connection=conn
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.start()
