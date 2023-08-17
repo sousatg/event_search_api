@@ -3,8 +3,8 @@ import concurrent.futures
 
 from lxml import etree
 from worker.provider_scraper.util import get_element
+from worker.store_events.tasks import save_event_in_the_database
 from datetime import datetime
-from worker.celery import app
 
 
 class DataFetcher:
@@ -67,7 +67,7 @@ class DataFetcher:
             'max_price': max_price
         }
 
-        app.send_task('worker.store_events.tasks.save_event_in_the_database', args=[e])
+        save_event_in_the_database.delay(e)
 
     def fetch_and_parse(self):
         self.fetch_data()
