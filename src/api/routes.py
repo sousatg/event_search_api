@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from api.schemas import SearchSchema, EventSchema
 from api.models import Event
 from datetime import datetime
-
+from sqlalchemy.sql import and_
 
 bp = Blueprint("main", __name__)
 
@@ -31,15 +31,13 @@ async def search_events():
     ends_at = request.args.get("ends_at", None)
 
     start_date = datetime.strptime(starts_at, "%Y-%m-%dT%H:%M:%SZ")
-    start_time = datetime.strptime(starts_at, "%Y-%m-%dT%H:%M:%SZ").time()
     end_date = datetime.strptime(ends_at, "%Y-%m-%dT%H:%M:%SZ")
-    end_time = datetime.strptime(ends_at, "%Y-%m-%dT%H:%M:%SZ").time()
 
     all_events = Event.query.filter(
-        Event.start_date >= start_date,
-        Event.start_time >= start_time,
-        Event.end_date <= end_date,
-        Event.end_time <= end_time,
+        and_(
+            Event.start_date + Event.start_time <= end_date,
+            Event.end_date + Event.end_time >= start_date
+        )
     ).all()
 
     result = EventSchema(many=True).dump(all_events)
