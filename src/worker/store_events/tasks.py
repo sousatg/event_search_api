@@ -6,37 +6,33 @@ from worker.store_events.database import SessionLocal
 
 
 @app.task
-def save_event_in_the_database(event):
-    if type(event) is not dict:
+def save_event_in_the_database(event_dto):
+    if type(event_dto) is not dict:
         raise Exception("Passed parameter is not a dictionary")
 
     session: Session = SessionLocal()
 
-    internal_id = event.get("internal_id", None)
+    internal_id = event_dto.get("internal_id", None)
 
     if internal_id is None:
         raise Exception("Missing internal id")
 
-    result = session.query(Event).filter_by(internal_id=internal_id).one_or_none()
+    event = session.query(Event).filter_by(internal_id=internal_id).one_or_none()
 
-    # Terminate task if internal_id already exists in the database
-    if result is not None:
-        return
+    if event is None:
+        event = Event()
+        event.id = str(uuid4())
+
+    event.title = event_dto.get("title", event.title)
+    event.start_date = event_dto.get("start_date", event.start_date)
+    event.start_time = event_dto.get("start_time", event.start_time)
+    event.end_date = event_dto.get("end_date", event.end_date)
+    event.end_time = event_dto.get("end_time", event.end_time)
+    event.min_price = event_dto.get("min_price", event.min_price)
+    event.max_price = event_dto.get("max_price", event.max_price)
 
     try:
-        entity = Event()
-
-        entity.id = str(uuid4())
-        entity.title = event.get("title", None)
-        entity.internal_id = event.get("internal_id", None)
-        entity.start_date = event.get("start_date", None)
-        entity.start_time = event.get("start_time", None)
-        entity.end_date = event.get("end_date", None)
-        entity.end_time = event.get("end_time", None)
-        entity.min_price = event.get("min_price", None)
-        entity.max_price = event.get("max_price", None)
-
-        session.add(entity)
+        session.add(event)
         session.commit()
     except Exception:
         session.rollback()
