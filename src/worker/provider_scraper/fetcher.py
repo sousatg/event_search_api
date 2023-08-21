@@ -8,9 +8,10 @@ from datetime import datetime
 
 
 class DataFetcher:
-    def __init__(self, url):
+    def __init__(self, url, provider_id):
         self._url = url
         self._data = None
+        self._provider_id = provider_id
 
     def fetch_data(self):
         response = requests.get(self._url)
@@ -22,33 +23,28 @@ class DataFetcher:
 
     def parse_xml(self):
         root = etree.XML(self._data)
-        event_list = root.xpath("//eventList/output/base_event")
+        event_list = root.xpath("//base_event[@sell_mode='online']/event")
 
         return event_list
 
     def process_event(self, root):
-        sell_mode = get_element(root, "./@sell_mode")
+        base_event_id = get_element(root, "../@base_event_id")
+        event_id = get_element(root, "./@event_id")
+        title = get_element(root, "../@title")
 
-        if sell_mode != "online":
-            return
-
-        title = get_element(root, "./@title")
-        base_event_id = get_element(root, "./@base_event_id")
-        event_id = get_element(root, "./event/@event_id")
-
-        start_hour = get_element(root, "./event/@event_start_date")
+        start_hour = get_element(root, "./@event_start_date")
         try:
             start_hour_object = datetime.strptime(start_hour, "%Y-%m-%dT%H:%M:%S")
         except Exception:
             raise Exception(f"Wront datetime format: {start_hour}")
 
-        end_hour = get_element(root, "./event/@event_end_date")
+        end_hour = get_element(root, "./@event_end_date")
         try:
             end_hour_object = datetime.strptime(end_hour, "%Y-%m-%dT%H:%M:%S")
         except Exception:
             raise Exception(f"Wront datetime format: {end_hour}")
 
-        prices = sorted(root.xpath("./event/zone/@price"))
+        prices = sorted(root.xpath("./zone/@price"))
 
         if len(prices) < 1:
             raise Exception("Missing prices")
@@ -57,7 +53,7 @@ class DataFetcher:
         max_price = float(prices[-1])
 
         e = {
-            "internal_id": f"1:{base_event_id}:{event_id}",
+            "internal_id": f"{self._provider_id}:{base_event_id}:{event_id}",
             "title": title,
             "end_time": end_hour_object.time(),
             "end_date": end_hour_object.date(),
