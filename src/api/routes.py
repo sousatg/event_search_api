@@ -36,7 +36,7 @@ async def search_events():
     all_events = Event.query.filter(
         and_(
             Event.start_date + Event.start_time <= end_date,
-            Event.end_date + Event.end_time >= start_date
+            Event.end_date + Event.end_time >= start_date,
         )
     ).all()
 

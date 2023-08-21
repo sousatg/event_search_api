@@ -6,9 +6,7 @@ from api.models import Event
 
 
 class TestSaveEventInTheDatabase(unittest.TestCase):
-    def test_passing_empty_event_property(
-        self
-    ):
+    def test_passing_empty_event_property(self):
         with self.assertRaises(Exception) as context:
             save_event_in_the_database(None)
 
