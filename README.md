@@ -60,6 +60,22 @@ source .env
 
 ## Architecture
 
-### Component Diagram
+![Component Diagram](/docs/diagrams/component_diagram.png)
 
-![Component Diagram](/docs/component_diagram.png)
+### ADR (Architectural Decision Records)
+[Data Persistency](/docs/adr/0001-data-persistency.md)
+[Fetch Events From Provider](/docs/adr/0002-fetch-events-from-provider.md)
+[Tasks Queue](/docs/adr/0003-task-queue.md)
+[App Server](/docs/adr/0004-app-server.md)
+
+## The extra mile
+Facing the need to scale the application with a focus on performance, I decided to break the functionality of extracting events from the provider and saving them in a database in separate service using task queue to achieve to achieve a high performance of the API.
+
+In the context receiving between 5k/10k request per second on our endpoint the Search API and the Database can be scaled with replication. For the Search API we can have has many replicas as needed since the API is stateless, regarding the Database we would have a primary node responsible for writes and share the binlog with the other replicas.
+
+To optimize the read performance we can also add a application cache-aside strategy and after some monitoring of the user data access patterns select a proper cache eviction policy but until then a least recently used should be alright.
+
+In the context of that the files we get from the provider contains
+thousands of events with hundreds of zones each our task queue can scale the ammount of workers as needed. The extraction of events is done in a multithreaded to ensure the optimal use of CPU and Memory in this process. The extraction of events and their processing could have been done in diference tasks and in batches of diferent workers.
+
+Saving the extracted events in the database is already a separated task running async.
