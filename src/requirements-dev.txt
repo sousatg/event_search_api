@@ -2,3 +2,4 @@ pre-commit
 pep8
 flake8
 sqlalchemy_utils
+black

@@ -57,16 +57,20 @@ source .env
 
 ### Useful commands
 - `make tests` - will run all tests
+- `make format` - format the code according to PEP8
+- `make migrate` - run migrations
+- `make server` - start the uvicorn locally
+- `make run` - run docker-compose with all images
 
 ## Architecture
 
 ![Component Diagram](/docs/diagrams/component_diagram.png)
 
 ### ADR (Architectural Decision Records)
-[Data Persistency](/docs/adr/0001-data-persistency.md)
-[Fetch Events From Provider](/docs/adr/0002-fetch-events-from-provider.md)
-[Tasks Queue](/docs/adr/0003-task-queue.md)
-[App Server](/docs/adr/0004-app-server.md)
+- [Data Persistency](/docs/adr/0001-data-persistency.md)
+- [Fetch Events From Provider](/docs/adr/0002-fetch-events-from-provider.md)
+- [Tasks Queue](/docs/adr/0003-task-queue.md)
+- [App Server](/docs/adr/0004-app-server.md)
 
 ## The extra mile
 Facing the need to scale the application with a focus on performance, I decided to break the functionality of extracting events from the provider and saving them in a database in separate service using task queue to achieve to achieve a high performance of the API.
