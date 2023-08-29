@@ -9,7 +9,7 @@
 ### Initial Steps
 #### Clone the Repository
 ```
-git@github.com:FeverCodeChallenge/GilSousa.git
+git@github.com:sousatg/event_search_api.git
 ```
 
 #### Change directories into the main project folder
