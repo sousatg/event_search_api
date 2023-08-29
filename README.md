@@ -14,7 +14,7 @@ git@github.com:sousatg/event_search_api.git
 
 #### Change directories into the main project folder
 ```
-cd GilSousa
+cd event_search_api
 ```
 
 ### Run with docker compose
